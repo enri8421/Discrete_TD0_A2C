@@ -8,8 +8,8 @@ from model import ConvNN, SimpleNN
 class PolicyAgent:
     def __init__(self, n, obs_shape, n_actions, lr_value = 0.001, lr_policy = 0.001, gamma = 0.99, beta = 0.01, device="cpu", preprocessor = None, load_path = None):
         self.n = n
-        self.value_net = SimpleNN(obs_shape, 1).to(device)
-        self.policy_net = SimpleNN(obs_shape, n_actions).to(device)
+        self.value_net = ConvNN(obs_shape, 1).to(device)
+        self.policy_net = ConvNN(obs_shape, n_actions).to(device)
         self.optimizer_value = optim.Adam(self.value_net.parameters(), lr=lr_value, eps=1e-3)
         self.optimizer_poliy = optim.Adam(self.policy_net.parameters(), lr=lr_policy, eps=1e-3)
         self.gamma = gamma
@@ -72,9 +72,6 @@ class PolicyAgent:
         return vals, ref_vals, log_prob_actions, entropy
 
     def update(self, transitions):
-
-        states, next_states, rewards, dones, actions = self.unpack_transitions(transitions)
-
         self.optimizer_value.zero_grad()
         self.optimizer_poliy.zero_grad()
 

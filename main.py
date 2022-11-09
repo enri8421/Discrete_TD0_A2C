@@ -7,20 +7,20 @@ from wrappers import  wrap_dqn
 # Log in to your W&B account
 import wandb
 wandb.login(key = "42822622ab75e399b67576b1ecd07f7ec017e542")
-wandb.init(project="Lunar-Lander-v2")
+wandb.init(project="Breakout")
 
 n_envs = 64
 
 
 
-#make_env = lambda: wrap_dqn(gym.make("BreakoutNoFrameskip-v4"))
-make_env = lambda: gym.make("LunarLander-v2")
+make_env = lambda: wrap_dqn(gym.make("BreakoutNoFrameskip-v4"))
+#make_env = lambda: gym.make("LunarLander-v2")
 envs = [make_env() for _ in range(n_envs)]
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 transform = lambda x: x/255
-agent = PolicyAgent(n_envs, envs[0].observation_space.shape, envs[0].action_space.n, device=device)
+agent = PolicyAgent(n_envs, envs[0].observation_space.shape, envs[0].action_space.n, device=device, transform = transform)
 exp_source = GenerateTransitions(envs, agent, True)
 
 ongoing_rewards = np.zeros(n_envs)
