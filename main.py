@@ -20,7 +20,7 @@ envs = [make_env() for _ in range(n_envs)]
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 transform = lambda x: x/255
-agent = PolicyAgent(n_envs, envs[0].observation_space.shape, envs[0].action_space.n, device=device, transform = transform)
+agent = PolicyAgent(n_envs, envs[0].observation_space.shape, envs[0].action_space.n, device=device, preprocessor = transform)
 exp_source = GenerateTransitions(envs, agent, True)
 
 ongoing_rewards = np.zeros(n_envs)
