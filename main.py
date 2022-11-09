@@ -2,7 +2,6 @@ import gym
 import ptan
 import numpy as np
 import torch
-from livelossplot import PlotLosses
 from agent import PolicyAgent
 from trajectory_generator import GenerateTransitions
 # Log in to your W&B account
