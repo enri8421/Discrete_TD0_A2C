@@ -91,7 +91,7 @@ class PolicyAgent:
         policy_loss.backward()
         self.optimizer_poliy.step()
 
-    def save_model(self, path):
+    def save_model(self, path = ""):
         torch.save(self.value_net.state_dict(), path + "value_weigth.pt")
         torch.save(self.policy_net.state_dict(), path + "policy_weigth.pt")
 

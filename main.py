@@ -5,11 +5,17 @@ import torch
 from livelossplot import PlotLosses
 from agent import PolicyAgent
 from trajectory_generator import GenerateTransitions
+# Log in to your W&B account
+import wandb
+wandb.login(key = "42822622ab75e399b67576b1ecd07f7ec017e542")
+wandb.init(project="Lunar-Lander-v2")
 
 n_envs = 64
 
+
+
 #make_env = lambda: ptan.common.wrappers.wrap_dqn(gym.make("BreakoutNoFrameskip-v4"))
-make_env = lambda: gym.make("CartPole-v1")
+make_env = lambda: gym.make("LunarLander-v2")
 envs = [make_env() for _ in range(n_envs)]
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -33,7 +39,8 @@ for idx, transitions in enumerate(exp_source):
 
     if idx % 100 == 0:
         if game_finished > 0:
-            plotlosses.update({'score': tot_rewards / game_finished})
-            plotlosses.send()
+            # plotlosses.update({'score': tot_rewards / game_finished})
+            # plotlosses.send()
+            wandb.log({'score': tot_rewards / game_finished})
 
     agent.update(transitions)
