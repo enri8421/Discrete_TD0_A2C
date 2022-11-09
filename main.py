@@ -1,9 +1,9 @@
 import gym
-import ptan
 import numpy as np
 import torch
 from agent import PolicyAgent
 from trajectory_generator import GenerateTransitions
+from wrappers import  wrap_dqn
 # Log in to your W&B account
 import wandb
 wandb.login(key = "42822622ab75e399b67576b1ecd07f7ec017e542")
@@ -13,7 +13,7 @@ n_envs = 64
 
 
 
-#make_env = lambda: ptan.common.wrappers.wrap_dqn(gym.make("BreakoutNoFrameskip-v4"))
+#make_env = lambda: wrap_dqn(gym.make("BreakoutNoFrameskip-v4"))
 make_env = lambda: gym.make("LunarLander-v2")
 envs = [make_env() for _ in range(n_envs)]
 
