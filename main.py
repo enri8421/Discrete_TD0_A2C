@@ -26,8 +26,6 @@ exp_source = GenerateTransitions(envs, agent, True)
 ongoing_rewards = np.zeros(n_envs)
 tot_rewards = 0
 game_finished = 0
-plotlosses = PlotLosses(groups={'Score': ['score']})
-
 for idx, transitions in enumerate(exp_source):
 
     ongoing_rewards += transitions.rewards
@@ -38,8 +36,8 @@ for idx, transitions in enumerate(exp_source):
 
     if idx % 100 == 0:
         if game_finished > 0:
-            # plotlosses.update({'score': tot_rewards / game_finished})
-            # plotlosses.send()
             wandb.log({'score': tot_rewards / game_finished})
+    if idx % 10000 == 0:
+        agent.save_model()
 
     agent.update(transitions)
