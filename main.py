@@ -42,5 +42,3 @@ for idx, (transitions, score) in enumerate(exp_source):
         agent.save_model()
 
     agent.update(transitions)
-
-    break
