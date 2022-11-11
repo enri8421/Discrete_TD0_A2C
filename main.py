@@ -6,7 +6,7 @@ from trajectory_generator import GenerateNstepTransition
 from wrappers import  wrap_dqn
 # Log in to your W&B account
 import wandb
-#wandb.login(key = "42822622ab75e399b67576b1ecd07f7ec017e542")
+wandb.login(key = "42822622ab75e399b67576b1ecd07f7ec017e542")
 wandb.init(project="Breakout")
 
 n_envs = 64
@@ -26,17 +26,18 @@ exp_source = GenerateNstepTransition(5, envs, agent, 0.99)
 ongoing_rewards = np.zeros(n_envs)
 tot_rewards = 0
 game_finished = 0
-for idx, transitions in enumerate(exp_source):
+for idx, (transitions, score) in enumerate(exp_source):
 
-    ongoing_rewards += transitions.rewards
+    ongoing_rewards += score.rewards
 
-    game_finished += np.sum(transitions.dones)
-    tot_rewards += np.sum(ongoing_rewards * transitions.dones)
-    ongoing_rewards = ongoing_rewards * (1 - transitions.dones)
+    game_finished += np.sum(score.dones)
+    tot_rewards += np.sum(ongoing_rewards * score.dones)
+    ongoing_rewards = ongoing_rewards * (1 - score.dones)
 
     if idx % 100 == 0:
         if game_finished > 0:
             wandb.log({'score': tot_rewards / game_finished})
+            pass
     if idx % 10000 == 0:
         agent.save_model()
 

@@ -42,7 +42,7 @@ class PolicyAgent:
     def unpack_transitions(self, transitions):
         states_t = self.list_2_tensor(transitions.states)
         actions_t = torch.LongTensor(transitions.actions).to(self.device)
-        ref_vals_t = torch.FloatTensor(transitions.ref_vals).to(self.device)
+        ref_vals_t = torch.unsqueeze(torch.FloatTensor(transitions.ref_vals), dim = 1).to(self.device)
         return states_t, actions_t, ref_vals_t
 
 

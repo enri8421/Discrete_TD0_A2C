@@ -2,6 +2,7 @@ import numpy as np
 from collections import namedtuple
 
 Transitions = namedtuple('Transition', ['states', 'actions', 'ref_vals'])
+Score = namedtuple('Score', ['rewards', 'dones'])
 
 
 class GenerateNstepTransition:
@@ -82,7 +83,8 @@ class GenerateNstepTransition:
         while True:
             ref_vals = self.compute_ref_values(curr_idx, rewards, dones, current_states)
             transitions = Transitions(states[curr_idx], actions[curr_idx], ref_vals)
-            yield transitions
+            scores = Score(rewards[curr_idx], dones[curr_idx])
+            yield transitions, scores
 
             logits = self.agent.act(current_states)
             action = self.get_actions(logits)
