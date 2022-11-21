@@ -8,6 +8,7 @@ class Default(object):
     gamma = 0.99
     beta = 0.01
     load_path = None
+    save_path = None
     save = False
 
     
@@ -29,6 +30,7 @@ def get_config(FLAGS):
     if FLAGS.save_weight:
         Path(f"weights/{FLAGS.env}").mkdir(parents=True, exist_ok=True)
         config.save = True
+        config.save_path = f"weights/{FLAGS.env}/"
         
     return config
         

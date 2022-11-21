@@ -57,6 +57,6 @@ for idx, transitions in enumerate(exp_source):
         if game_finished > 0:
             print(f"Trainign performance after itr {idx}: {tot_rewards / game_finished}")
     if (idx % 10000 == 0) and config.save:
-        agent.save_model(config.load_path)
+        agent.save_model(config.save_path)
 
     agent.update(transitions)
