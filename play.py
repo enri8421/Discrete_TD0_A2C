@@ -1,32 +1,33 @@
 import gym
-import ptan
 import numpy as np
 import torch
-from livelossplot import PlotLosses
-from agent import PolicyAgent
-from trajectory_generator import GenerateTransitions
+from utils.agent import PolicyAgent
+from absl import flags
+import sys
+
+env_string = {"CartPole" : "CartPole-v1", "LunarLander" : "LunarLander-v2", "Acrobot" : "Acrobot-v1"}
+
+FLAGS = flags.FLAGS
+flags.DEFINE_string('env', 'LunarLander', 'environment name')
+FLAGS(sys.argv)
 
 
-def softmax(prob):
-    prob_norm = np.exp(prob - np.max(prob))
-    return prob_norm / prob_norm.sum()
+env = gym.make(env_string[FLAGS.env])
 
-
-env = gym.make("LunarLander-v2")
-#env = ptan.common.wrappers.wrap_dqn(gym.make("BreakoutNoFrameskip-v4", render_mode='human'))
 n_action = env.action_space.n
 
-transform = lambda x: x/255
-transform = lambda x: x
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-agent = PolicyAgent(1, env.observation_space.shape, env.action_space.n, device=device, preprocessor = transform, load_path="weights/lunarlander/")
+agent = PolicyAgent(1, env.observation_space.shape, env.action_space.n,
+                    device=device, load_path=f"weights/{FLAGS.env}/")
 state = env.reset()
 
 done = False
 while not done:
     env.render()
-    prob = softmax(agent.act([state]))
+    logit = agent.act([state])
+    prob_norm = np.exp(logit - np.max(logit))
+    prob = prob_norm / prob_norm.sum()
     action = np.random.choice(n_action, p=prob[0])
     state, reward, done, _ = env.step(action)
 

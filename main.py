@@ -1,44 +1,62 @@
 import gym
 import numpy as np
 import torch
-from agent import PolicyAgent
-from trajectory_generator import GenerateNstepTransition
-from wrappers import  wrap_dqn
-# Log in to your W&B account
-import wandb
-wandb.login(key = "42822622ab75e399b67576b1ecd07f7ec017e542")
-wandb.init(project="Breakout")
+from absl import flags
+import sys
 
-n_envs = 64
+from utils.agent import PolicyAgent
+from utils.trajectory_generator import GenerateTransitions
+from utils.configuration import get_config
 
+FLAGS = flags.FLAGS
+flags.DEFINE_string('env', None, 'environment name')
+flags.DEFINE_string('env_name', None, 'environment name for gym')
+flags.DEFINE_boolean("load_weight", False, 'start training from current stored weight')
+flags.DEFINE_boolean("save_weight", False, 'save weight in apposite folder')
+flags.DEFINE_integer("n_envs", None, 'number of parallel env')
+flags.DEFINE_float("lr_value", None, "lr value net")
+flags.DEFINE_float("lr_policy", None, "lr policy net")
+flags.DEFINE_float("gamma", None, "discount factor")
+flags.DEFINE_float("beta", None, "entropy regularization weight")
+flags.mark_flag_as_required('env')
+flags.mark_flag_as_required('env_name')
 
+FLAGS(sys.argv)
+config = get_config(FLAGS)
 
-make_env = lambda: wrap_dqn(gym.make("BreakoutNoFrameskip-v4"))
-#make_env = lambda: gym.make("LunarLander-v2")
-envs = [make_env() for _ in range(n_envs)]
+make_env = lambda: gym.make(FLAGS.env_name)
+envs = [make_env() for _ in range(config.n_envs)]
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-transform = lambda x: x/255
-agent = PolicyAgent(n_envs, envs[0].observation_space.shape, envs[0].action_space.n, device=device, preprocessor = transform, load_path=None)
-exp_source = GenerateNstepTransition(5, envs, agent, 0.99)
+agent = PolicyAgent(config.n_envs, 
+                    envs[0].observation_space.shape, 
+                    envs[0].action_space.n,
+                    config.lr_value,
+                    config.lr_policy,
+                    config.gamma,
+                    config.beta,
+                    device, 
+                    None,
+                    config.load_path)
 
-ongoing_rewards = np.zeros(n_envs)
+exp_source = exp_source = GenerateTransitions(envs, agent, True)
+
+ongoing_rewards = np.zeros(config.n_envs)
 tot_rewards = 0
 game_finished = 0
-for idx, (transitions, score) in enumerate(exp_source):
+for idx, transitions in enumerate(exp_source):
 
-    ongoing_rewards += score.rewards
+    ongoing_rewards += transitions.rewards
 
-    game_finished += np.sum(score.dones)
-    tot_rewards += np.sum(ongoing_rewards * score.dones)
-    ongoing_rewards = ongoing_rewards * (1 - score.dones)
+    game_finished += np.sum(transitions.dones)
+    tot_rewards += np.sum(ongoing_rewards*transitions.dones)
+    ongoing_rewards = ongoing_rewards*(1 - transitions.dones)
 
     if idx % 100 == 0:
         if game_finished > 0:
-            wandb.log({'score': tot_rewards / game_finished})
-            pass
-    if idx % 10000 == 0:
-        agent.save_model()
+            print(f"Trainign performance after itr {idx}: {tot_rewards / game_finished}")
+    if (idx % 10000 == 0) and config.save:
+        agent.save_model(config.load_path)
 
     agent.update(transitions)
